@@ -6,11 +6,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.example.models.Beverages;
 import org.example.services.BeveragesDataSource;
 
@@ -55,7 +60,11 @@ public class MainController implements Initializable {
     private void handleButtonAction(ActionEvent event) {
 
         if(event.getSource() == btnInsert){
-            insertRecord();
+            try {
+                insertRecord(event);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }else if (event.getSource() == btnUpdate){
             updateRecord();
         }else if(event.getSource() == btnDelete){
@@ -139,10 +148,18 @@ public class MainController implements Initializable {
         }
     }
 
-    private void insertRecord(){
-        String  query = "INSERT INTO beverages (name, price, qty) VALUES (" + "'" + tfName.getText() + "'" + "," + tfPrice.getText() + "," + tfQty.getText() + ")";
-        conn.executeQuery(query);
-        updateBeverages();
+    @FXML
+    public void insertRecord(ActionEvent event) throws IOException{
+//        String  query = "INSERT INTO beverages (name, price, qty) VALUES (" + "'" + tfName.getText() + "'" + "," + tfPrice.getText() + "," + tfQty.getText() + ")";
+//        conn.executeQuery(query);
+//        updateBeverages();
+
+        Parent root = FXMLLoader.load(getClass().getResource("/Add.fxml"));
+        Scene scene = new Scene(root);
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();  // Get the current stage
+        stage.setScene(scene);
+        stage.show();
     }
     private void updateRecord(){
         String query = "UPDATE  beverages SET name  = '" + tfName.getText() + "', price = " + tfPrice.getText() + ", qty = " + tfQty.getText() + " WHERE id = " + selected.getId() + "";

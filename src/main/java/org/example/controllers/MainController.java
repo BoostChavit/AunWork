@@ -1,5 +1,7 @@
 package org.example.controllers;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -9,10 +11,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import org.example.models.Beverages;
 import org.example.services.BeveragesDataSource;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -22,8 +24,6 @@ public class MainController implements Initializable {
 
 
     @FXML
-    private TextField tfId;
-    @FXML
     private TextField tfName;
     @FXML
     private TextField tfPrice;
@@ -31,14 +31,6 @@ public class MainController implements Initializable {
     private TextField tfQty;
     @FXML
     private TableView<Beverages> tvBeverages;
-    @FXML
-    private TableColumn<Beverages, Integer> colId;
-    @FXML
-    private TableColumn<Beverages, String> colName;
-    @FXML
-    private TableColumn<Beverages, Integer> colPrice;
-    @FXML
-    private TableColumn<Beverages, Integer> colQty;
     @FXML
     private Button btnInsert;
     @FXML
@@ -48,11 +40,15 @@ public class MainController implements Initializable {
 
     private ObservableList<Beverages> list;
     private BeveragesDataSource conn;
+    private Beverages selected;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         conn = new BeveragesDataSource();
+        selected = null;
         showBeverages();
+        isSelected();
+        handleSelectedTableView();
     }
 
     @FXML
@@ -108,9 +104,39 @@ public class MainController implements Initializable {
         tvBeverages.getColumns().addAll(nameCol, priceCol, qtyCol);
     }
 
+    private void handleSelectedTableView() {
+        tvBeverages.getSelectionModel().selectedItemProperty().addListener(
+                new ChangeListener<Beverages>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Beverages> observable, Beverages oldB, Beverages newB) {
+                        selected = newB;
+                        tfName.setText(newB.getName());
+                        tfPrice.setText(String.valueOf(newB.getPrice()));
+                        tfQty.setText(String.valueOf(newB.getQty()));
+                        isSelected();
+                    }
+                });
+    }
+
     public void updateBeverages() {
         list = getBeveragesList();
         tvBeverages.setItems(list);
+    }
+
+    public void isSelected() {
+        if(selected == null) {
+            tfName.setDisable(true);
+            tfQty.setDisable(true);
+            tfPrice.setDisable(true);
+            btnUpdate.setDisable(true);
+            btnDelete.setDisable(true);
+        } else {
+            tfName.setDisable(false);
+            tfQty.setDisable(false);
+            tfPrice.setDisable(false);
+            btnUpdate.setDisable(false);
+            btnDelete.setDisable(false);
+        }
     }
 
     private void insertRecord(){
@@ -119,15 +145,25 @@ public class MainController implements Initializable {
         updateBeverages();
     }
     private void updateRecord(){
-        String query = "UPDATE  beverages SET name  = '" + tfName.getText() + "', price = '" + tfPrice.getText() + " WHERE id = " + tfId.getText() + "";
+        String query = "UPDATE  beverages SET name  = '" + tfName.getText() + "', price = " + tfPrice.getText() + ", qty = " + tfQty.getText() + " WHERE id = " + selected.getId() + "";
         conn.executeQuery(query);
-        showBeverages();
+        updateBeverages();
+        clear();
+        isSelected();
     }
     private void deleteButton(){
-        String query = "DELETE FROM books WHERE id =" + tfId.getText() + "";
+        String query = "DELETE FROM beverages WHERE id =" + selected.getId() + "";
         conn.executeQuery(query);
-        showBeverages();
+        updateBeverages();
+        clear();
+        isSelected();
     }
 
+    private void clear() {
+        tfName.clear();
+        tfQty.clear();
+        tfPrice.clear();
+        selected = null;
+    }
 
 }

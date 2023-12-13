@@ -14,8 +14,6 @@ import org.example.models.Beverages;
 import org.example.services.BeveragesDataSource;
 
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ResourceBundle;
@@ -30,6 +28,8 @@ public class MainController implements Initializable {
     @FXML
     private TextField tfPrice;
     @FXML
+    private TextField tfQty;
+    @FXML
     private TableView<Beverages> tvBeverages;
     @FXML
     private TableColumn<Beverages, Integer> colId;
@@ -37,6 +37,8 @@ public class MainController implements Initializable {
     private TableColumn<Beverages, String> colName;
     @FXML
     private TableColumn<Beverages, Integer> colPrice;
+    @FXML
+    private TableColumn<Beverages, Integer> colQty;
     @FXML
     private Button btnInsert;
     @FXML
@@ -50,6 +52,7 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         conn = new BeveragesDataSource();
+        showBeverages();
     }
 
     @FXML
@@ -68,11 +71,10 @@ public class MainController implements Initializable {
     public ObservableList<Beverages> getBeveragesList(){
         ObservableList<Beverages> beverageList = FXCollections.observableArrayList();
         String query = "SELECT * FROM beverages";
-        Statement st;
         ResultSet rs;
 
         try{
-            st = conn.createStatement();
+            Statement st = conn.createStatement();
             rs = st.executeQuery(query);
             Beverages beverages;
             while(rs.next()){
@@ -87,18 +89,34 @@ public class MainController implements Initializable {
     }
 
     public void showBeverages(){
-//        ObservableList<Beverages> list = getBeveragesList();
+        list = getBeveragesList();
 
-        colId.setCellValueFactory(new PropertyValueFactory<Beverages, Integer>("id"));
-        colName.setCellValueFactory(new PropertyValueFactory<Beverages, String>("name"));
-        colPrice.setCellValueFactory(new PropertyValueFactory<Beverages, Integer>("price"));
+        TableColumn<Beverages, String> nameCol = new TableColumn<>("Name");
+        nameCol.setCellValueFactory(features -> features.getValue().nameProperty());
+        nameCol.setMinWidth(100);
+
+        TableColumn<Beverages, Integer> priceCol = new TableColumn<>("Price");
+        priceCol.setCellValueFactory(features -> features.getValue().priceProperty().asObject());
+        priceCol.setMinWidth(100);
+
+        TableColumn<Beverages, Integer> qtyCol = new TableColumn<>("Qty");
+        qtyCol.setCellValueFactory(features -> features.getValue().qtyProperty().asObject());
+        qtyCol.setMinWidth(100);
+
 
         tvBeverages.setItems(list);
+        tvBeverages.getColumns().addAll(nameCol, priceCol, qtyCol);
     }
+
+    public void updateBeverages() {
+        list = getBeveragesList();
+        tvBeverages.setItems(list);
+    }
+
     private void insertRecord(){
-        String query = "INSERT INTO beverages VALUES (" + tfId.getText() + ",'" + tfName.getText() + "','" + tfPrice.getText() + ")";
+        String  query = "INSERT INTO beverages (name, price, qty) VALUES (" + "'" + tfName.getText() + "'" + "," + tfPrice.getText() + "," + tfQty.getText() + ")";
         conn.executeQuery(query);
-        showBeverages();
+        updateBeverages();
     }
     private void updateRecord(){
         String query = "UPDATE  beverages SET name  = '" + tfName.getText() + "', price = '" + tfPrice.getText() + " WHERE id = " + tfId.getText() + "";

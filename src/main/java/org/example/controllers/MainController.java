@@ -11,17 +11,20 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.example.models.Beverages;
 import org.example.services.BeveragesDataSource;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ResourceBundle;
 
@@ -181,6 +184,53 @@ public class MainController implements Initializable {
         tfQty.clear();
         tfPrice.clear();
         selected = null;
+    }
+
+    @FXML
+    public void handleBackUpButton(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select Directory to Save CSV");
+
+        File selectedDirectory = directoryChooser.showDialog(null);
+
+        if (selectedDirectory != null) {
+            String csvFilePath = selectedDirectory.getAbsolutePath() + "/output.csv";
+
+            try {
+                Statement statement = conn.createStatement();
+                ResultSet result = statement.executeQuery("SELECT * FROM beverages");
+                ResultSetMetaData rsmd = result.getMetaData();
+
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath))) {
+
+                    for (int i = 1; i < rsmd.getColumnCount() + 1; i++) {
+                        writer.write(rsmd.getColumnName(i) + ", ");
+                    }
+
+                    writer.newLine();
+
+                    while (result.next()) {
+                        writer.write(result.getInt("id") + ", " + result.getString("name") + ", " + result.getInt("price") + ", " + result.getInt("qty"));
+                        writer.newLine();
+                    }
+
+                    System.out.println("Backup Database Successfully");
+
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Information Dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Backup successfully at " + selectedDirectory);
+
+                    alert.showAndWait();
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }

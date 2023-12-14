@@ -48,6 +48,7 @@
       <Button fx:id="btnInsert" layoutX="62.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="25.0" prefWidth="85.0" text="Add" />
       <Button fx:id="btnUpdate" layoutX="155.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="25.0" prefWidth="85.0" text="Update" />
       <Button fx:id="btnDelete" layoutX="248.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="25.0" prefWidth="76.0" text="Delete" />
+      <Button fx:id="btnBackUp" layoutX="248.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleBackUpButton" prefHeight="25.0" prefWidth="76.0" text="Backup" />
       <Text layoutX="75.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Management" textAlignment="CENTER" wrappingWidth="221.13671875">
          <font>
             <Font size="24.0" />
